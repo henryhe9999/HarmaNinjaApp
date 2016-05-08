@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- HTML5 Hello world by kirupa - http://www.kirupa.com/html5/getting_your_feet_wet_html5_pg1.htm -->
+<html lang="en-us">
+
+    <head>
+    <meta charset="utf-8">
+    <title>HarmoNinja</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link href="cover.css" rel="stylesheet">
+    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-1.11.2.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-rc.4/angular.min.js"></script>
+	<script src="phonegap.js"></script>
+    <!--<script src="annyang.min.js"></script>-->
+    <!--<script src="controller.js"></script>-->
+	
+  <script type='text/javascript'>
+    var audio = null;
+
+    function searchTracks(query) {
+        communicateAction('Play song test before ajax');
+        $.ajax({
+            url: 'https://api.spotify.com/v1/search',
+            data: {
+                q: query,
+                type: 'track'
+            },
+             error: function(xhr, exception){
+				communicateAction('error');
+			    communicateAction('readyState:' + xhr.readyState);
+				communicateAction('status:' + xhr.status);
+				communicateAction('responseText:' + xhr.responseText);
+             },            
+            success: function (response) {
+                if (response.tracks.items.length) {
+                    var track = response.tracks.items[0];
+					audio = new Media(track.preview_url, stopAudio, null);
+                    //audio.src = track.preview_url;
+                    audio.play();
+                    communicateAction('<div>Playing ' + track.name + ' by ' + track.artists[0].name + '</div><img width="150" src="' + track.album.images[1].url + '">');
+                }
+            }
+        });
+    }
+
+    function playSong(songName, artistName) {
+        communicateAction('Play song test');
+        var query = songName;
+        if (artistName) {
+            query += ' artist:' + artistName;
+        }
+
+        searchTracks(query);
+    }
+
+    function communicateAction(text) {
+        var rec = document.getElementById('conversation');
+        rec.innerHTML = '<div class="action">' + text + '</div>';
+    }
+
+    function recognized(text) {
+        var rec = document.getElementById('conversation');
+        rec.innerHTML = '<div class="recognized"><div>' + text + '</div></div>';
+    }
+	
+    function stopAudio() {
+		myMedia.stop();
+	}
+
+	function onPlaySong() {
+		playSong("Play " + $('#songName').val());
+	}
+
+	function onStopSong() {
+		stopAudio();
+	}	
+</script>	
+	
+    </head>
+    
+    <body>
+        <main>
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <div id="commands">
+                            <img src="logo.png" alt="logo" style="width:275px;height:192px;">
+                            <h1>Play songs using voice commands</h1>
+                            <p>"Play {song name}"</p>
+                            <p>"Play {song name} by {artist name}"</p>
+                        </div>
+                    </div>
+   <input type="text" id="songName" value="Love Someone" onfocus="javascript:this.value=''" />
+   <input type="button" id="PlayButton" value="Play" onclick="onPlaySong();"/>
+   <input type="button" id="stopButton" value="Stop" onclick="onStopSong();"/>   					
+                    <div class="panel-body">
+                        <div id="conversation"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2"></div>
+        </main>
+    </body>
+
+</html>
